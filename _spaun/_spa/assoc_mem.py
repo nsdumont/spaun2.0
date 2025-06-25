@@ -1,8 +1,8 @@
-from nengo.networks.assoc_mem import AssociativeMemory as AssocMem
-from nengo.spa.module import Module
+from nengo_spa import AssociativeMemory as AssocMem
+from nengo_spa import Network
 
 
-class AssociativeMemory(Module):
+class AssociativeMemory(Network):
     """Associative memory module.
 
     Parameters
@@ -119,5 +119,5 @@ class AssociativeMemory(Module):
             if cleanup_output:
                 self.cleaned_utilities = self.am.cleaned_output_utilities
 
-        self.inputs = dict(default=(self.input, input_vocab))
-        self.outputs = dict(default=(self.output, output_vocab))
+        self.declare_input(self.input, input_vocab) # default
+        self.declare_output(self.output, output_vocab) # default

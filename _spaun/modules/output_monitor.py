@@ -2,7 +2,7 @@ import numpy as np
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -10,7 +10,7 @@ from ..vocabulator import vocab
 from ..experimenter import experiment
 
 
-class SpaunOutputMonitor(Module):
+class SpaunOutputMonitor(Network):
     def __init__(self, label="Monitor", seed=None, add_to_container=None):
         super(SpaunOutputMonitor, self).__init__(label, seed, add_to_container)
         self.init_module()
@@ -23,11 +23,11 @@ class SpaunOutputMonitor(Module):
     def init_module(self):
         self.output = \
             nengo.Node(output=self.monitor_node_func,
-                       size_in=len(vocab.mtr.keys) + 3,
+                       size_in=len(vocab.mtr.keys()) + 3,
                        label='Experiment monitor')
 
         # Define vocabulary inputs and outputs
-        self.outputs = dict(default=(self.output, vocab.vis_main))
+        self.declare_output(self.output, vocab.main)  # default
 
     def monitor_node_func(self, t, x):
         # Determine what has been written

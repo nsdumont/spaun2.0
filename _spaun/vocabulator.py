@@ -1,8 +1,8 @@
 import time
 import numpy as np
 
-from nengo.spa import Vocabulary
-from nengo.spa import SemanticPointer
+from nengo_spa import Vocabulary
+from nengo_spa import SemanticPointer
 
 from .loggerator import logger
 
@@ -84,6 +84,12 @@ class SpaunVocabulary(object):
         # --- Instruction processing input and output tags
         self.instr_tag_strs = ['VIS', 'TASK', 'STATE', 'DEC', 'DATA', 'ENABLE']
 
+        self.all_strs = self.num_sp_strs + self.ps_task_sp_strs + self.ps_task_vis_sp_strs + \
+            self.ps_state_sp_strs + self.ps_dec_sp_strs + self.misc_vis_sp_strs + \
+                  self.misc_ps_sp_strs + self.mtr_sp_strs + self.ops_sp_strs + self.reward_sp_strs \
+                  + self.instr_tag_strs
+
+
     def write_header(self):
         logger.write('# Spaun Vocabulary Options:\n')
         logger.write('# -------------------------\n')
@@ -118,19 +124,12 @@ class SpaunVocabulary(object):
 
         # #################### Vocabulary definitions #########################
         # --- Primary vocabulary ---
-        self.main = Vocabulary(self.sp_dim, unitary=self.unitary_sp_strs,
-                               max_similarity=0.2, rng=rng)
-
-        # --- Add in visual sp's ---
-        self.main.parse('+'.join(self.misc_vis_sp_strs))
-        self.main.parse('+'.join(self.ps_task_vis_sp_strs))
-        for sp_str in list(stim_SP_labels):
-            if sp_str not in self.num_sp_strs and \
-               sp_str not in self.pos_sp_strs:
-                self.main.parse(sp_str)
+        self.main = Vocabulary(self.sp_dim, 
+                               max_similarity=0.2)#, rng=rng)
+        
 
         # --- Add numerical sp's ---
-        self.main.parse('%s+%s' % (self.ops_sp_strs[0], self.num_sp_strs[0]))
+        self.main.populate('%s; %s' % (self.ops_sp_strs[0], self.num_sp_strs[0]))
         add_sp = self.main[self.ops_sp_strs[0]]
         num_sp = self.main[self.num_sp_strs[0]].copy()
         for i in range(len(self.num_sp_strs) - 1):
@@ -139,8 +138,16 @@ class SpaunVocabulary(object):
 
         self.add_sp = add_sp
 
+        # --- Add in visual sp's ---
+        self.main.populate('; '.join(self.misc_vis_sp_strs))
+        self.main.populate('; '.join(self.ps_task_vis_sp_strs))
+        for sp_str in list(stim_SP_labels):
+            if sp_str not in self.main.keys():
+                self.main.populate(sp_str)
+
+        
         # --- Add positional sp's ---
-        self.main.parse('%s+%s' % (self.ops_sp_strs[1], self.pos_sp_strs[0]))
+        self.main.populate('%s; %s' % (self.ops_sp_strs[1], self.pos_sp_strs[0]))
         inc_sp = self.main[self.ops_sp_strs[1]]
         pos_sp = self.main[self.pos_sp_strs[0]].copy()
         for i in range(len(self.pos_sp_strs) - 1):
@@ -150,15 +157,15 @@ class SpaunVocabulary(object):
         self.inc_sp = inc_sp
 
         # --- Add production system sp's ---
-        self.main.parse('+'.join(self.ps_task_sp_strs))
-        self.main.parse('+'.join(self.ps_state_sp_strs))
-        self.main.parse('+'.join(self.ps_dec_sp_strs))
+        self.main.populate('; '.join([s for s in self.ps_task_sp_strs if s not in self.main.keys()]))
+        self.main.populate('; '.join([s for s in self.ps_state_sp_strs if s not in self.main.keys()]))
+        self.main.populate('; '.join([s for s in self.ps_dec_sp_strs if s not in self.main.keys()]))
         if len(self.ps_action_sp_strs) > 0:
-            self.main.parse('+'.join(self.ps_action_sp_strs))
-        self.main.parse('+'.join(self.misc_ps_sp_strs))
+            self.main.populate('; '.join([s for s in self.ps_action_sp_strs if s not in self.main.keys()]))
+        self.main.populate('; '.join([s for s in self.misc_ps_sp_strs if s not in self.main.keys()]))
 
         # --- Add instruction processing system sp's ---
-        self.main.parse('+'.join(self.instr_tag_strs))
+        self.main.populate('; '.join([s for s in self.instr_tag_strs if s not in self.main.keys()]))
 
         # ################### Visual Vocabulary definitions ###################
         self.vis_sp_strs = list(stim_SP_labels)
@@ -200,16 +207,18 @@ class SpaunVocabulary(object):
         # ############ Enumerated vocabulary definitions ######################
         # --- Enumerated vocabulary, enumerates all possible combinations of
         #     position and item vectors (for debug purposes)
-        self.enum = Vocabulary(self.sp_dim, rng=rng)
+        self.enum = Vocabulary(self.sp_dim)
         for pos in self.pos_sp_strs:
             for num in self.num_sp_strs:
+                key_str = '%sx%s' % (pos, num)
                 sp_str = '%s*%s' % (pos, num)
-                self.enum.add(sp_str, self.main.parse(sp_str))
+                self.enum.add(key_str, self.main.parse(sp_str).v)
 
-        self.pos1 = Vocabulary(self.sp_dim, rng=rng)
+        self.pos1 = Vocabulary(self.sp_dim)
         for num in self.num_sp_strs:
+            key_str = '%sx%s' % (self.pos_sp_strs[0], num)
             sp_str = '%s*%s' % (self.pos_sp_strs[0], num)
-            self.pos1.add(sp_str, self.main.parse(sp_str))
+            self.pos1.add(key_str, self.main.parse(sp_str).v)
 
         # ############ Instruction vocabulary definitions #####################
         # --- ANTECEDENT and CONSEQUENCE permutation transforms

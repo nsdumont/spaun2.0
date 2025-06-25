@@ -18,14 +18,14 @@ def Pos_Inc_Network(pos_vocab, pos_reset_key, inc_sp, reversable=False,
         if not reversable:
             # POS x INC
             nengo.Connection(net.pos_mb.output, net.pos_mb.input,
-                             transform=inc_sp.get_convolution_matrix())
+                             transform=inc_sp.get_binding_matrix())
         else:
             dir_sel = cfg.make_selector(2, default_sel=0,
                                         make_ens_func=cfg.make_spa_ens_array)
             nengo.Connection(net.pos_mb.output, dir_sel.input0,
-                             transform=inc_sp.get_convolution_matrix())
+                             transform=inc_sp.get_binding_matrix())
             nengo.Connection(net.pos_mb.output, dir_sel.input1,
-                             transform=(~inc_sp).get_convolution_matrix())
+                             transform=(~inc_sp).get_binding_matrix())
             nengo.Connection(dir_sel.output, net.pos_mb.input)
 
             net.reverse = dir_sel.sel1

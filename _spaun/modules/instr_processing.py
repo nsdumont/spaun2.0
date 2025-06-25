@@ -2,7 +2,7 @@ from warnings import warn
 import numpy as np
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -20,7 +20,7 @@ def cleanup_func(t, x, vectors):
 # ### DEBUG ###
 
 
-class InstructionProcessingSystem(Module):
+class InstructionProcessingSystem(Network):
     def __init__(self, label="Instr Processing Sys", seed=None,
                  add_to_container=None):
         super(InstructionProcessingSystem, self).__init__(label, seed,
@@ -104,13 +104,13 @@ class InstructionProcessingSystem(Module):
 
         nengo.Connection(
             vis_am.output, instr_pos_cconv.B,
-            transform=instr_voc.parse('VIS').get_convolution_matrix()[antT])
+            transform=instr_voc.parse('VIS').get_binding_matrix()[antT])
         nengo.Connection(
             task_am.output, instr_pos_cconv.B,
-            transform=instr_voc.parse('TASK').get_convolution_matrix()[antT])
+            transform=instr_voc.parse('TASK').get_binding_matrix()[antT])
         nengo.Connection(
             state_am.output, instr_pos_cconv.B,
-            transform=instr_voc.parse('STATE').get_convolution_matrix()[antT])
+            transform=instr_voc.parse('STATE').get_binding_matrix()[antT])
 
         # ----------- SEQUENTIAL INSTRUCTION POSITION INC NETWORK -------------
         # Position increment network for sequential instructions
@@ -127,7 +127,7 @@ class InstructionProcessingSystem(Module):
                                        threshold_gate_in=True)
         nengo.Connection(
             self.pos_inc.output, instr_pos_cconv.B,
-            transform=instr_voc.parse('1').get_convolution_matrix()[antT])
+            transform=instr_voc.parse('1').get_binding_matrix()[antT])
 
         self.pos_inc_reset = cfg.make_thresh_ens_net()
         nengo.Connection(self.pos_inc_reset.output, self.pos_inc.reset)
@@ -166,7 +166,7 @@ class InstructionProcessingSystem(Module):
         data_sig_gen = Data_Sig_Gen(vocab.main, 'DATA')
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], data_sig_gen.input,
-            transform=(instr_voc.parse('~DATA').get_convolution_matrix() *
+            transform=(instr_voc.parse('~DATA').get_binding_matrix() *
                        cfg.instr_out_gain), synapse=0.01)
         nengo.Connection(no_pos_chosen.output, data_sig_gen.gate_sig_in,
                          transform=-80)
@@ -178,7 +178,7 @@ class InstructionProcessingSystem(Module):
                                   cleanup_threshold=cfg.instr_ps_threshold)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], task_sig_gen.input,
-            transform=instr_voc.parse('~TASK').get_convolution_matrix(),
+            transform=instr_voc.parse('~TASK').get_binding_matrix(),
             synapse=0.01)
         self.task_output = task_sig_gen.output
         self.task_gate_sig = task_sig_gen.gate_sig
@@ -188,7 +188,7 @@ class InstructionProcessingSystem(Module):
                                    cleanup_threshold=cfg.instr_ps_threshold)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], state_sig_gen.input,
-            transform=instr_voc.parse('~STATE').get_convolution_matrix(),
+            transform=instr_voc.parse('~STATE').get_binding_matrix(),
             synapse=0.01)
         self.state_output = state_sig_gen.output
         self.state_gate_sig = state_sig_gen.gate_sig
@@ -198,7 +198,7 @@ class InstructionProcessingSystem(Module):
                                  cleanup_threshold=cfg.instr_ps_threshold)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], dec_sig_gen.input,
-            transform=instr_voc.parse('~DEC').get_convolution_matrix(),
+            transform=instr_voc.parse('~DEC').get_binding_matrix(),
             synapse=0.01)
         self.dec_output = dec_sig_gen.output
         self.dec_gate_sig = dec_sig_gen.gate_sig
@@ -229,17 +229,18 @@ class InstructionProcessingSystem(Module):
         # ------------- POS AM UTILITY OUTPUT (TO BG) ------------------------
         self.pos_util_output = nengo.Node(size_in=vocab.ps_task.dimensions)
         pos_util_matrix = np.array([vocab.ps_task.parse('INSTR').v] *
-                                   len(vocab.pos.keys))
+                                   len(vocab.pos.keys()))
         nengo.Connection(pos_am.elem_utilities, self.pos_util_output,
                          transform=pos_util_matrix.T)
 
         # ------------------- MODULE INPUTS AND OUTPUTS -----------------------
-        self.inputs = dict(en=(self.enable_in_sp, vocab.instr),
-                           util=(self.pos_util_output, vocab.ps_task))
-        self.outputs = dict(data=(self.output, vocab.main),
-                            task=(self.task_output, vocab.ps_task),
-                            state=(self.state_output, vocab.ps_state),
-                            dec=(self.dec_output, vocab.ps_dec))
+        self.declare_input(self.enable_in_sp, vocab.main) # en
+        self.declare_input(self.pos_util_output, vocab.main) # util
+        self.declare_output(self.output, vocab.main), #data
+        self.declare_output(self.task_output, vocab.main), #task
+        self.declare_output(self.state_output, vocab.main), # state
+        self.declare_output(self.dec_output, vocab.main) #dec
+        
 
         # ## DEBUG ## #
         self.pos_am = pos_am
@@ -258,19 +259,19 @@ class InstructionProcessingSystem(Module):
         self.task_node = nengo.Node(size_in=vocab.sp_dim)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], self.task_node,
-            transform=instr_voc.parse('~TASK').get_convolution_matrix(),
+            transform=instr_voc.parse('~TASK').get_binding_matrix(),
             synapse=0.01)
 
         self.state_node = nengo.Node(size_in=vocab.sp_dim)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], self.state_node,
-            transform=instr_voc.parse('~STATE').get_convolution_matrix(),
+            transform=instr_voc.parse('~STATE').get_binding_matrix(),
             synapse=0.01)
 
         self.dec_node = nengo.Node(size_in=vocab.sp_dim)
         nengo.Connection(
             instr_cons_cconv.output[inv_conT], self.dec_node,
-            transform=instr_voc.parse('~DEC').get_convolution_matrix(),
+            transform=instr_voc.parse('~DEC').get_binding_matrix(),
             synapse=0.01)
 
         self.pos_instr = instr_cons_cconv.B

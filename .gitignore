@@ -2,6 +2,7 @@
 *.pyc
 *.pkc
 .DS_Store
+.ipynb_checkpoints
 
 build/
 data/

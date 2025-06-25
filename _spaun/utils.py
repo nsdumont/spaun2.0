@@ -59,4 +59,4 @@ def get_probe_data_filename(label='probe_data', suffix='', ext='npz'):
                                str(vocab.sp_dim)]),
                      raw_seq[:150],
                      str(cfg.seed)]) + \
-           ("" if suffix is '' else '(' + suffix + ')') + "." + ext
+           ("" if suffix == '' else '(' + suffix + ')') + "." + ext

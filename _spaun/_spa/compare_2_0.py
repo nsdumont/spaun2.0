@@ -3,12 +3,12 @@ import numpy as np
 import nengo
 from nengo.dists import Choice, Uniform
 from nengo.networks import Product
-from nengo.spa.module import Module
+from nengo_spa import Network
 
 from .._networks import VectorNormalize
 
 
-class Compare(Module):
+class Compare(Network):
     """A module for computing the dot product of two inputs.
 
     Parameters
@@ -69,8 +69,12 @@ class Compare(Module):
                 nengo.Connection(self.compare.output, self.output,
                                  transform=match_transform.T)
 
-        self.inputs = dict(A=(self.inputA, vocab), B=(self.inputB, vocab))
-        self.outputs = dict(default=(self.output, vocab))
+        # self.inputs = dict(A=(self.inputA, vocab), B=(self.inputB, vocab))
+        # self.outputs = dict(default=(self.output, vocab))
+
+        self.declare_input(self.inputA, vocab) # A
+        self.declare_input(self.inputB, vocab) # A
+        self.declare_output(self.output, vocab) # A
 
         if output_no_match:
             with self:

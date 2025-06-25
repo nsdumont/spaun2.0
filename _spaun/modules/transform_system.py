@@ -2,7 +2,7 @@ import numpy as np
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from .._spa import Compare
@@ -12,7 +12,7 @@ from ..utils import invol_matrix
 from .transform import Assoc_Mem_Transforms_Network
 
 
-class TransformationSystem(Module):
+class TransformationSystem(Network):
     def __init__(self, label="Transformation Sys", seed=None,
                  add_to_container=None):
         super(TransformationSystem, self).__init__(label, seed,
@@ -133,8 +133,9 @@ class TransformationSystem(Module):
         nengo.Connection(self.select_out.output, self.output, synapse=None)
 
         # ----- Set up module vocab inputs and outputs -----
-        self.inputs = dict(input=(self.select_out.input6, vocab.main))
-        self.outputs = dict(compare=(self.compare.output, vocab.main))
+        self.declare_input(self.select_out.input6, vocab.main) # input
+        self.declare_output(self.compare.output, vocab.main) # compare
+
 
     @with_self
     def setup_connections(self, parent_net):
@@ -313,4 +314,5 @@ class TransformationSystemDummy(TransformationSystem):
 
         # ----- Output node -----
         self.output = self.frm_mb1
-        self.outputs = dict(compare=(self.compare, vocab))
+        self.declare_output(self.compare, vocab.main) # compare
+

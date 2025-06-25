@@ -3,7 +3,7 @@ import numpy as np
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -16,14 +16,14 @@ from .vision import vis_data
 from .motor import mtr_data
 
 
-class InfoDecoding(Module):
+class InfoDecoding(Network):
     def __init__(self, label="Information Dec", seed=None,
                  add_to_container=None):
         super(InfoDecoding, self).__init__(label, seed, add_to_container)
         self.init_module()
 
     @with_self
-    def init_module(self):
+    def __init__(self):
         bias_node = nengo.Node(output=1)
 
         # ---------------------- Inputs and outputs ------------------------- #

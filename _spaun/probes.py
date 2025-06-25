@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 import nengo
-from nengo.spa import Vocabulary
+from nengo_spa import Vocabulary
 
 from .configurator import cfg
 from .modules.stim import stim_data
@@ -315,15 +315,17 @@ class ProbeCfgAnimDefault(SpaunProbeConfig):
 class ProbeCfgDefault(SpaunProbeConfig):
     def initialize_probes(self):
         # ===================== MAKE DISPLAY VOCABS ===========================
-        sub_vocab1 = self.v.enum.create_subset(['POS1*ONE', 'POS2*TWO',
-                                                'POS3*THR', 'POS4*FOR',
-                                                'POS5*FIV'])
+        sub_vocab1 = self.v.main.create_subset([])
+        sub_vocab1.readonly = False
+        for i, name in enumerate(['ONE','TWO','THR','FOR','FIV']):
+            sub_vocab1.add(f'POS{i+1}x{name}', self.v.main.parse(f'POS{i+1}*{name}').v)
+       
 
         sub_vocab2 = self.v.main.create_subset(['ADD'])
         sub_vocab2.readonly = False
-        sub_vocab2.add('N_ADD', self.v.main.parse('~ADD'))
-        sub_vocab2.add('ADD*ADD', self.v.main.parse('ADD*ADD'))
-        sub_vocab2.add('ADD*ADD*ADD', self.v.main.parse('ADD*ADD*ADD'))
+        sub_vocab2.add('N_ADD', self.v.main.parse('~ADD').v)
+        sub_vocab2.add('ADDxADD', self.v.main.parse('ADD*ADD').v)
+        sub_vocab2.add('ADDxADDxADD', self.v.main.parse('ADD*ADD*ADD').v)
         # sub_vocab2.add('ADD*ADD*ADD*ADD',
         #                self.v.main.parse('ADD*ADD*ADD*ADD'))
         # sub_vocab2.add('ADD*ADD*ADD*ADD*ADD',
@@ -336,43 +338,46 @@ class ProbeCfgDefault(SpaunProbeConfig):
         # sub_vocab3.add('N_POS1*THR', self.v.main.parse('~(POS1*THR)'))
         # sub_vocab3.add('N_POS1*FOR', self.v.main.parse('~(POS1*FOR)'))
         # sub_vocab3.add('N_POS1*FIV', self.v.main.parse('~(POS1*FIV)'))
-        sub_vocab3.add('ADD', self.v.main.parse('ADD'))
-        sub_vocab3.add('INC', self.v.main.parse('INC'))
+        sub_vocab3.add('ADD', self.v.main.parse('ADD').v)
+        sub_vocab3.add('INC', self.v.main.parse('INC').v)
 
         vocab_seq_list = self.v.main.create_subset([])
         vocab_seq_list.readonly = False
-        for sp_str in ['POS1*ONE', 'POS2*TWO', 'POS3*THR', 'POS4*FOR',
-                       'POS5*FIV', 'POS6*SIX', 'POS7*SEV', 'POS8*EIG']:
-            vocab_seq_list.add(sp_str, self.v.main.parse(sp_str))
+        for i, name in enumerate(['ONE','TWO','THR','FOR','FIV','SIX','SEV','EIG']):
+            vocab_seq_list.add(f'POS{i+1}x{name}', self.v.main.parse(f'POS{i+1}*{name}').v)
+       
 
         vocab_rpm = self.v.main.create_subset([])
         vocab_rpm.readonly = False
         for i in [1, 3, 8]:
             sp_str = self.v.num_sp_strs[i]
-            vocab_rpm.add('A_(P1+P2+P3)*%s' % sp_str,
+            vocab_rpm.add('A_lP1_P2_P3lx%s' % sp_str,
                           self.v.main.parse('POS1*%s+POS2*%s+POS3*%s' %
-                                            (sp_str, sp_str, sp_str)))
-            vocab_rpm.add('N_(P1+P2+P3)*%s' % sp_str,
+                                            (sp_str, sp_str, sp_str)).v)
+            vocab_rpm.add('N_lP1_P2_P3lx%s' % sp_str,
                           self.v.main.parse('~(POS1*%s+POS2*%s+POS3*%s)' %
-                                            (sp_str, sp_str, sp_str)))
+                                            (sp_str, sp_str, sp_str)).v)
 
         vocab_pos1 = self.v.main.create_subset([])
         vocab_pos1.readonly = False
         for sp_str in self.v.num_sp_strs:
             p1_str = 'POS1*%s' % sp_str
-            vocab_pos1.add(p1_str, self.v.main.parse(p1_str))
+            vocab_pos1.add(p1_str.replace('*', 'x'), self.v.main.parse(p1_str).v)
 
         vocab_mem1 = self.v.main.create_subset([])
         vocab_mem1.readonly = False
-        for sp_str in ['POS1*ONE', 'POS1*CLUMBER', 'POS1*BRITTANY_SPANIEL',
-                       'POS1*GUENON', 'POS1*RED_FOX', 'POS1*KIT_FOX']:
-            vocab_mem1.add(sp_str, self.v.main.parse(sp_str))
+        # TODO: fix below
+        # for sp_str in ['POS1*ONE', 'POS1*CLUMBER', 'POS1*BRITTANY_SPANIEL',
+        #                'POS1*GUENON', 'POS1*RED_FOX', 'POS1*KIT_FOX']:
+        #     new_key = sp_str.replace('*', 'x')
+        #     new_value = self.v.main.parse(sp_str).v
+        #     vocab_mem1.add(new_key, new_value)
 
         vocab_imnet = self.v.main.create_subset([])
         vocab_imnet.readonly = False
-        for sp_str in ['POLICE_VAN', 'PUCK', 'GREY_WHALE',
-                       'ORGAN', 'HALF_TRACK']:
-            vocab_imnet.add(sp_str, self.v.main.parse(sp_str))
+        # for sp_str in ['POLICE_VAN', 'PUCK', 'GREY_WHALE',
+        #                'ORGAN', 'HALF_TRACK']:
+        #     vocab_imnet.add(sp_str, self.v.main.parse(sp_str).v)
 
         # ----------- Default vocabs ------------------
         # mem_vocab = vocab_seq_list

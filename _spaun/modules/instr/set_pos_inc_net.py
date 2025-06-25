@@ -25,7 +25,7 @@ def Settable_Pos_Inc_Network(pos_vocab, pos_reset_key, inc_sp, num_vocab,
 
         # POS x INC
         nengo.Connection(net.pos_mb.output, net.pos_mb.input,
-                         transform=inc_sp.get_convolution_matrix())
+                         transform=inc_sp.get_binding_matrix())
 
         # Set up pos_mb output gate and inhibit am is active
         # Note: taking output from mem1 for faster performance switching

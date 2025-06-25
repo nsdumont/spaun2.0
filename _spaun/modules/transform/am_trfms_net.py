@@ -48,7 +48,7 @@ def Assoc_Mem_Transforms_Network(item_vocab, pos_vocab, pos1_vocab,
         # For learning task action mapping
         net.am_action_learn = cfg.make_assoc_mem(
             action_learn_vocab.vectors,
-            pos1_vocab.vectors[:len(action_learn_vocab.keys), :])
+            pos1_vocab.vectors[:len(action_learn_vocab.keys()), :])
 
         nengo.Connection(net.frm_action, net.am_action_learn.input,
                          synapse=None)
@@ -58,7 +58,7 @@ def Assoc_Mem_Transforms_Network(item_vocab, pos_vocab, pos1_vocab,
         # ------------- Associative Memories for compare task -----------------
         net.am_compare = cfg.make_assoc_mem(
             cmp_vocab.vectors,
-            pos1_vocab.vectors[:len(cmp_vocab.keys), :],
+            pos1_vocab.vectors[:len(cmp_vocab.keys()), :],
             threshold=0.25)
 
         nengo.Connection(net.frm_compare, net.am_compare.input,

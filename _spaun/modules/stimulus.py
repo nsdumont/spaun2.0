@@ -2,7 +2,7 @@ import numpy as np
 
 import nengo
 from nengo.processes import PresentInput
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -42,7 +42,7 @@ def stim_func_vocab(t):
     return get_vocab(experiment.get_stimulus(t))[0]
 
 
-class SpaunStimulus(Module):
+class SpaunStimulus(Network):
     def __init__(self, label="Stimulus", seed=None, add_to_container=None):
         super(SpaunStimulus, self).__init__(label, seed, add_to_container)
         self.init_module()
@@ -64,10 +64,10 @@ class SpaunStimulus(Module):
                          synapse=None)
 
         # Define vocabulary inputs and outputs
-        self.outputs = dict(default=(self.output, vocab.vis))
+        self.declare_output(self.output, vocab.main) # default
 
 
-class SpaunStimulusDummy(Module):
+class SpaunStimulusDummy(Network):
     def __init__(self, label="Stimulus", seed=None, add_to_container=None):
         super(SpaunStimulusDummy, self).__init__(label, seed, add_to_container)
         self.init_module()
@@ -78,10 +78,11 @@ class SpaunStimulusDummy(Module):
         self.output = nengo.Node(output=np.random.uniform(size=dimension))
 
         # Define vocabulary inputs and outputs
-        self.outputs = dict(default=(self.output, vocab.vis))
+        self.declare_output(self.output, vocab.main) # default
 
 
-class SpaunInstructionStimulus(Module):
+
+class SpaunInstructionStimulus(Network):
     def __init__(self, label="Instruction Stimulus", seed=None,
                  add_to_container=None):
         super(SpaunInstructionStimulus, self).__init__(label, seed,

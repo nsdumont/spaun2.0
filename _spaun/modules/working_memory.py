@@ -1,7 +1,7 @@
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -10,7 +10,7 @@ from .._networks import Selector
 from .memory import WM_Generic_Network, WM_Averaging_Network
 
 
-class WorkingMemory(Module):
+class WorkingMemory(Network):
     def __init__(self, label="Working Memory", seed=None,
                  add_to_container=None):
         super(WorkingMemory, self).__init__(label, seed, add_to_container)
@@ -35,7 +35,7 @@ class WorkingMemory(Module):
                                     threshold_sel_in=True)
 
         # 'ADD' transform for WM
-        sp_add_matrix = (vocab.add_sp.get_convolution_matrix() *
+        sp_add_matrix = (vocab.add_sp.get_binding_matrix() *
                          (0.25 / cfg.mb_rehearsalbuf_input_scale +
                           0.25 / (cfg.mb_decaybuf_input_scale - 0.15)))
 
@@ -109,10 +109,10 @@ class WorkingMemory(Module):
         self.data_gate_in = self.select_gate.input1
 
         # ----- Set up module vocab inputs and outputs -----
-        self.outputs = dict(mb1=(self.mb1, vocab.enum),
-                            mb2=(self.mb2, vocab.enum),
-                            mb3=(self.mb3, vocab.enum),
-                            mbave=(self.mbave, vocab.enum))
+        self.declare_output(self.mb1, vocab.main) # mb1
+        self.declare_output(self.mb2, vocab.main) # mb2
+        self.declare_output(self.mb3, vocab.main) # mb3
+        self.declare_output(self.mbave, vocab.main) # mbave
 
         # ### DEBUG ###
         self.gate_in_neg_att_dbg = nengo.Node(size_in=1)

@@ -1,7 +1,7 @@
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -10,7 +10,7 @@ from ..vocabulator import vocab
 from .encoding import Pos_Inc_Network
 
 
-class InfoEncoding(Module):
+class InfoEncoding(Network):
     def __init__(self, label="Information Enc", seed=None,
                  add_to_container=None):
         super(InfoEncoding, self).__init__(label, seed, add_to_container)
@@ -71,8 +71,10 @@ class InfoEncoding(Module):
         self.enc_output = self.item_cconv.output
 
         # Define module inputs and outputs
-        self.inputs = dict(default=(self.item_input, vocab.item))
-        self.outputs = dict(default=(self.pos_output, vocab.pos))
+        self.declare_input(self.item_input, vocab.main)
+        self.declare_output(self.pos_output, vocab.main)
+
+        
 
     def setup_connections(self, parent_net):
         # Set up connections from vision module

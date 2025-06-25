@@ -1,14 +1,14 @@
 from warnings import warn
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
 from ..vocabulator import vocab
 
 
-class ProductionSystem(Module):
+class ProductionSystem(Network):
     def __init__(self, label="Production Sys", seed=None,
                  add_to_container=None):
         super(ProductionSystem, self).__init__(label, seed, add_to_container)
@@ -99,14 +99,16 @@ class ProductionSystem(Module):
                          synapse=0.01)
 
         # ------ Define module input and outputs ------
-        self.inputs = dict(task=(self.task_mb.input, vocab.ps_task),
-                           state=(self.state_mb.input, vocab.ps_state),
-                           dec=(self.dec_mb.input, vocab.ps_dec),
-                           action=(self.action_in, vocab.ps_action))
-        self.outputs = dict(task=(self.task, vocab.ps_task),
-                            state=(self.state, vocab.ps_state),
-                            dec=(self.dec, vocab.ps_dec),
-                            action=(self.action, vocab.ps_action))
+        self.declare_input(self.task_mb.input, vocab.main) # task
+        self.declare_input(self.state_mb.input, vocab.main) #state
+        self.declare_input(self.dec_mb.input, vocab.main) # dec
+        self.declare_input(self.action_in, vocab.main) # action
+        self.declare_output(self.task, vocab.main), # task
+        self.declare_output(self.state, vocab.main) #state
+        self.declare_output(self.dec, vocab.main) # dec
+        self.declare_output(self.action, vocab.main) # action
+        
+        
 
     def setup_connections(self, parent_net):
         # Set up connections from vision module

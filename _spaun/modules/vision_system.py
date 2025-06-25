@@ -2,7 +2,7 @@ from warnings import warn
 import numpy as np
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from .._networks import DetectChange
@@ -14,7 +14,7 @@ from .stim import stim_data
 from .vision import vis_data, VisionNet, VisionNetClassifier
 
 
-class VisionSystem(Module):
+class VisionSystem(Network):
     def __init__(self, label="Vision Sys", seed=None, add_to_container=None,
                  vis_net=None, detect_net=None,
                  vis_net_cfg=None, vis_net_neuron_type=None):
@@ -112,8 +112,9 @@ class VisionSystem(Module):
         self.neg_attention = self.detect_change_net.output
 
         # Define module inputs and outputs
-        self.outputs = dict(default=(self.output, vocab.vis_main),
-                            mem=(self.vis_main_mem.output, vocab.vis_main))
+        self.declare_input(self.input, vocab.main)
+        self.declare_output(self.output, vocab.main)
+        self.declare_output(self.vis_main_mem.output, vocab.main) # mem
 
         # ######################## DEBUG PROBES ###############################
         self.vis_out = self.vis_net.to_classify_output

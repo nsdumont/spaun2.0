@@ -4,7 +4,7 @@ from warnings import warn
 import nengo
 from nengo.dists import Choice, Exponential
 from nengo.networks import EnsembleArray
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from ..configurator import cfg
@@ -12,7 +12,7 @@ from ..vocabulator import vocab
 from ..experimenter import experiment
 
 
-class RewardEvaluationSystem(Module):
+class RewardEvaluationSystem(Network):
     def __init__(self, label="Reward Evaluation Sys", seed=None,
                  add_to_container=None):
         super(RewardEvaluationSystem, self).__init__(label, seed,

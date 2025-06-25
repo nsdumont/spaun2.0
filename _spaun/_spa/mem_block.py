@@ -1,7 +1,7 @@
 import numpy as np
 
 import nengo
-from nengo.spa.module import Module
+from nengo_spa import Network
 from nengo.dists import Choice
 from nengo.dists import Exponential
 
@@ -10,7 +10,7 @@ from .._networks import InputGatedCleanupMemory as WMC
 from .._networks import InputGatedCleanupPlusMemory as WMCP
 
 
-class MemoryBlock(Module):
+class MemoryBlock(Network):
     def __init__(self, n_neurons, dimensions, vocab,
                  radius=None, gate_mode=1, reset_mode=3, cleanup_mode=0,
                  cleanup_keys=None, reset_key=None, threshold_gate_in=False,
@@ -141,5 +141,5 @@ class MemoryBlock(Module):
         self.output = self.mem2.output
 
         # Configure SPA default input and output vocabularies
-        self.inputs = dict(default=(self.input, vocab))
-        self.outputs = dict(default=(self.output, vocab))
+        self.declare_input(self.input, vocab) #default
+        self.declare_output(self.output, vocab) #default

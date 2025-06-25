@@ -5,7 +5,7 @@ import importlib
 
 import nengo
 from nengo.dists import Exponential
-from nengo.spa.module import Module
+from nengo_spa.network import Network
 from nengo.utils.network import with_self
 
 from .._networks import DifferenceFunctionEvaluator as DiffFuncEvaltr
@@ -14,7 +14,7 @@ from ..vocabulator import vocab
 from .motor import Controller, Ramp_Signal_Network, forcefield, mtr_data
 
 
-class MotorSystem(Module):
+class MotorSystem(Network):
     def __init__(self, label="Motor Sys", seed=None, add_to_container=None):
         super(MotorSystem, self).__init__(label, seed, add_to_container)
         self.init_module()
@@ -296,7 +296,7 @@ class MotorSystem(Module):
         self.ramp_50_75 = self.ramp_sig.ramp_50_75
 
         # Decode index (number) bypass to monitor module
-        self.dec_ind = nengo.Node(size_in=len(vocab.mtr.keys) + 1)
+        self.dec_ind = nengo.Node(size_in=len(vocab.mtr.keys()) + 1)
 
         # Target diff norm
         # self.target_diff_norm_out = nengo.Node(size_in=1)
@@ -393,7 +393,7 @@ class MotorSystem(Module):
             warn("MotorSystem Module - Cannot connect from 'dec'")
 
 
-class MotorSystemDummy(Module):
+class MotorSystemDummy(Network):
     def __init__(self, label="Motor Sys", seed=None, add_to_container=None):
         super(MotorSystemDummy, self).__init__(label, seed, add_to_container)
         self.init_module()
@@ -503,7 +503,7 @@ class MotorSystemDummy(Module):
         self.ramp_50_75 = self.ramp_sig.ramp_50_75
 
         # Decode index (number) bypass to monitor module
-        self.dec_ind = nengo.Node(size_in=len(vocab.mtr.keys) + 1)
+        self.dec_ind = nengo.Node(size_in=len(vocab.mtr.keys()) + 1)
 
         # Target diff norm
         # self.target_diff_norm_out = nengo.Node(size_in=1)

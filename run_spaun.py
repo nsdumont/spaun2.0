@@ -636,7 +636,7 @@ for n in range(args.n):
     print("RAW STIM SEQ: %s" % (str(experiment.raw_seq_str)))
 
     # ----- Spaun proper -----
-    model = Spaun()
+    model = Spaun(vocab=vocab)
 
     # ----- Display stimulus seq -----
     print("PROCESSED RAW STIM SEQ: %s" % (str(experiment.raw_seq_list)))
