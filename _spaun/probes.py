@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pickle
 
 import nengo
 from nengo_spa import Vocabulary
@@ -192,9 +193,10 @@ class SpaunProbeConfig(object):
             if isinstance(probe, nengo.Probe) and \
                idstr(probe) in self.probe_list:
                 probe_data[idstr(probe)] = sim.data[probe]
-        np.savez_compressed(os.path.join(self.data_dir,
-                                         self.data_filename),
-                            **probe_data)
+       
+        with open(os.path.join(self.data_dir, self.data_filename + '.pkl'), 'wb') as f:
+            pickle.dump(probe_data, f)
+        
 
     def initialize_probes(self):
         # To be defined by SpaunProbeConfig subclasses

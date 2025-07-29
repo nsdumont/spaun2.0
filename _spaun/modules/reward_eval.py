@@ -37,7 +37,7 @@ class RewardEvaluationSystem(Network):
         # ------------------- Reward detection network ------------------------
         # Translates visual input into reward yes/no signals
         # Note: Output of reward_detect is inverted
-        num_reward_sps = len(vocab.reward.keys)
+        num_reward_sps = len(vocab.reward.keys())
         self.reward_detect = cfg.make_thresh_ens_net(num_ens=num_reward_sps)
         nengo.Connection(bias_node, self.reward_detect.input,
                          transform=np.ones(num_reward_sps)[:, None])

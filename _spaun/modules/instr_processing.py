@@ -49,7 +49,7 @@ class InstructionProcessingSystem(Network):
         #                               cleanup_func_wta(t, x, vectors))
 
         # ----------- INSTRUCTION SP INPUT + SEMI NORMALIZATION ---------------
-        instr_ea_subdim = min(16, vocab.sp_dim)
+        instr_ea_subdim = vocab.sp_dim if vocab.sp_dim < 16 else 16 if vocab.sp_dim % 16 == 0 else 2 if vocab.sp_dim % 2 == 0 else 1
         self.instr_ea = cfg.make_ens_array(
             n_neurons=cfg.n_neurons_ens * instr_ea_subdim,
             n_ensembles=vocab.sp_dim // instr_ea_subdim,

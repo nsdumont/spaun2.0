@@ -23,7 +23,7 @@ class InfoDecoding(Network):
         self.init_module()
 
     @with_self
-    def __init__(self):
+    def init_module(self):
         bias_node = nengo.Node(output=1)
 
         # ---------------------- Inputs and outputs ------------------------- #
@@ -269,12 +269,12 @@ class InfoDecoding(Network):
         self.output_stop = self.output_classify.output_stop
 
         # Direct motor (digit) index output to the experimenter system
-        self.dec_ind_output = nengo.Node(size_in=len(vocab.mtr.keys) + 1)
+        self.dec_ind_output = nengo.Node(size_in=len(vocab.mtr.keys()) + 1)
         nengo.Connection(serial_decode.dec_am1.cleaned_output_utilities,
-                         self.dec_ind_output[:len(vocab.mtr.keys)],
+                         self.dec_ind_output[:len(vocab.mtr.keys())],
                          synapse=None)
         nengo.Connection(self.output_classify.output_unk,
-                         self.dec_ind_output[len(vocab.mtr.keys)],
+                         self.dec_ind_output[len(vocab.mtr.keys())],
                          synapse=None)
 
     def setup_connections(self, parent_net):

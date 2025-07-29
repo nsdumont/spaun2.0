@@ -27,26 +27,26 @@ def Visual_Transform_Network(vis_vocab, vis_am_threshold, vis_am_input_scale,
         #       visual WM system
         # TODO: Use output of Serial Decode instead of replicating code?
         digit_classify = \
-            cfg.make_assoc_mem(vis_vocab.vectors[:len(mtr_vocab.keys), :],
-                               np.ones((len(mtr_vocab.keys),
-                                        len(mtr_vocab.keys))) -
-                               np.eye(len(mtr_vocab.keys)),
+            cfg.make_assoc_mem(vis_vocab.vectors[:len(mtr_vocab.keys()), :],
+                               np.ones((len(mtr_vocab.keys()),
+                                        len(mtr_vocab.keys()))) -
+                               np.eye(len(mtr_vocab.keys())),
                                threshold=vis_am_threshold,
                                label='DIGIT CLASSIFY', inhibitable=True)
-        digit_classify.add_default_output_vector(np.ones(len(mtr_vocab.keys)))
+        digit_classify.add_default_output_vector(np.ones(len(mtr_vocab.keys())))
         nengo.Connection(net.input, digit_classify.input,
                          transform=vis_am_input_scale, synapse=None)
 
         net.am_inhibit = digit_classify.inhibit
 
         # --------------------- Motor SP Transformation -----------------------
-        if len(mtr_vocab.keys) != copy_draw_trfms_x.shape[0]:
+        if len(mtr_vocab.keys()) != copy_draw_trfms_x.shape[0]:
             raise ValueError('Transform System - Number of motor pointers' +
                              ' does not match number of given copydraw' +
                              ' transforms.')
 
         # ------------------ Motor SP Transform ensembles ---------------------
-        for n in range(len(mtr_vocab.keys)):
+        for n in range(len(mtr_vocab.keys())):
             mtr_path_dim = mtr_vocab.dimensions // 2
             # Motor SP contains both X and Y information, so motor path dim is
             # half that of the SP dim
@@ -68,7 +68,7 @@ def Visual_Transform_Network(vis_vocab, vis_am_threshold, vis_am_input_scale,
 
             # Class output is inverted (i.e. if class is 3, it's [1, 1, 0, 1])
             # So transform here is just the identity
-            inhib_trfm = np.zeros((1, len(mtr_vocab.keys)))
+            inhib_trfm = np.zeros((1, len(mtr_vocab.keys())))
             inhib_trfm[0, n] = 1
             nengo.Connection(digit_classify.output, trfm_ea.inhibit,
                              transform=inhib_trfm)

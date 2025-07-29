@@ -84,7 +84,7 @@ class MNISTDataObject(object):
             rng = np.random.RandomState()
 
         if isinstance(label, tuple):
-            label = label[0]
+            return (self.images_data[label[0]], int(label[1]))
 
         if isinstance(label, int):
             # Case when 'label' given is really just the image index number

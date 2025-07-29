@@ -10,3 +10,6 @@ from .info_decoding import InfoDecoding as InfoDec
 from .motor_system import MotorSystem as Motor
 from .reward_eval import RewardEvaluationSystem as RewardEval
 from .instr_processing import InstructionProcessingSystem as InstrProcess
+from .action_selection import ActionSelection
+from .thalamus import Thalamus
+from .basalganglia import BasalGanglia

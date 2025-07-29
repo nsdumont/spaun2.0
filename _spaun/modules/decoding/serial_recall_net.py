@@ -24,7 +24,7 @@ def Serial_Recall_Network(item_vocab, mtr_vocab,
                                default_output_vector=(
                                    np.zeros(mtr_vocab.dimensions)))
         net.dec_am1.add_output_mapping(
-            'linear_output', np.eye(len(item_vocab.keys)),
+            'linear_output', np.eye(len(item_vocab.keys())),
             net.dec_am1.threshold_shifted_linear_funcs())
 
         nengo.Connection(net.item_dcconv.output, net.dec_am1.input,
@@ -36,7 +36,7 @@ def Serial_Recall_Network(item_vocab, mtr_vocab,
                                          inhibitable=True,
                                          threshold=0.0)
         net.dec_am2.add_output_mapping(
-            'linear_output', np.eye(len(item_vocab.keys)),
+            'linear_output', np.eye(len(item_vocab.keys())),
             net.dec_am2.threshold_shifted_linear_funcs())
 
         nengo.Connection(net.item_dcconv.output, net.dec_am2.input,
@@ -44,7 +44,7 @@ def Serial_Recall_Network(item_vocab, mtr_vocab,
 
         # Inhibit the am1 chosen item (so that am2 chooses the 2nd strongest)
         net.dec_am2.add_input_mapping('dec_am_utils',
-                                      np.eye(len(item_vocab.keys)) * -3)
+                                      np.eye(len(item_vocab.keys())) * -3)
         nengo.Connection(net.dec_am1.cleaned_output_utilities,
                          net.dec_am2.dec_am_utils)
 
@@ -53,9 +53,9 @@ def Serial_Recall_Network(item_vocab, mtr_vocab,
         # am2 utils is greater than cfg.dec_am_min_diff
         util_diff = cfg.make_thresh_ens_net(cfg.dec_am_min_diff)
         nengo.Connection(net.dec_am1.linear_output, util_diff.input,
-                         transform=[[1] * len(item_vocab.keys)], synapse=0.02)
+                         transform=[[1] * len(item_vocab.keys())], synapse=0.02)
         nengo.Connection(net.dec_am2.linear_output, util_diff.input,
-                         transform=[[-1] * len(item_vocab.keys)], synapse=0.02)
+                         transform=[[-1] * len(item_vocab.keys())], synapse=0.02)
 
         util_diff_neg = cfg.make_thresh_ens_net(1 - cfg.dec_am_min_diff)
         nengo.Connection(bias_node, util_diff_neg.input)

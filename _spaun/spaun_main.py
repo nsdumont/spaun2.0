@@ -8,6 +8,7 @@ from .loggerator import logger
 from .modules import Stimulus, Vision, ProdSys, RewardEval, InfoEnc
 from .modules import TrfmSys, Memory, Monitor, InfoDec, Motor
 from .modules import InstrStimulus, InstrProcess
+from .modules import ActionSelection, BasalGanglia, Thalamus
 
 # #### DEBUG DUMMY NETWORK IMPORTS ####
 # from _spaun.modules.experimenter import StimulusDummy as Stimulus  # noqa
@@ -73,11 +74,25 @@ def Spaun(vocab):
             instr_dec = model.instr.dec_output
 
         model.learn_conns = []
-
-            
+        
 
         if hasattr(model, 'vis') and hasattr(model, 'ps'):
-            with spa.ActionSelection() as action_sel:
+            n_actions = 16
+            if hasattr(model, 'reward'):
+                n_actions += len(vocab.ps_action_learn_sp_strs)
+            if hasattr(model, 'trfm'):
+                n_actions +=  21
+            if hasattr(model, 'trfm') and hasattr(model, 'instr'): 
+                n_actions +=  5
+
+            model.bg = BasalGanglia(n_actions,
+                                        label='Basal Ganglia')
+            model.bg.input_synapse=0.008
+            model.thal = Thalamus(n_actions, 
+                                     mutual_inhibit=1., route_inhibit=5.0,
+                                    label='Thalamus')
+            model.action_sel = ActionSelection(bg=model.bg, thalamus=model.thal, channel_config={'subdimensions':1}) 
+            with model.action_sel:
                 spa.ifmax(0.5 * (spa.dot(ps_task_out, v.X) + spa.dot(vis, v.ZER)), 
                         v.W >> ps_task_in, v.TRANS0 >> ps_state_in, v.FWD >> ps_dec_in)
                 spa.ifmax(spa.dot(ps_task_out, v.W-v.DEC) - spa.dot(vis, v.QM),
@@ -98,7 +113,7 @@ def Spaun(vocab):
                 if hasattr(model, 'reward'):
                     for s in vocab.ps_action_learn_sp_strs:
                         spa.ifmax(0.5 * (spa.dot(ps_task_out, 2*v.L) - 1) - spa.dot(vis, v.QM),
-                                v.s >> ps_action, v.LEARN >> ps_state_in, v.NONE >> ps_dec_in) 
+                                vocab.main.parse(s) >> ps_action, v.LEARN >> ps_state_in, v.NONE >> ps_dec_in) 
                 
                 spa.ifmax(0.5 * (spa.dot(ps_task_out, v.X) + spa.dot(vis, v.THR)),
                         v.M >> ps_task_in, v.TRANS0 >> ps_state_in, v.FWD >> ps_dec_in)
@@ -206,14 +221,6 @@ def Spaun(vocab):
                             ps_task_out >> ps_task_in, ps_state_out >> ps_state_in, ps_dec_out >> ps_dec_in)
                 
 
-            # model.bg = action_sel.bg
-            # model.thal = action_sel.thal
-
-            # model.bg = spa.BasalGanglia(actions=actions, input_synapse=0.008,
-            #                             label='Basal Ganglia')
-            # model.thal = spa.Thalamus(model.bg, subdim_channel=1,
-            #                         mutual_inhibit=1, route_inhibit=5.0,
-            #                         label='Thalamus')
 
         # ----- Set up connections (and save record of modules) -----
         if hasattr(model, 'vis'):
@@ -229,24 +236,24 @@ def Spaun(vocab):
         if hasattr(model, 'bg'):
             if hasattr(model, 'reward'):
                 # Clear learning transforms
-                # del cfg.learn_init_transforms[:]
+                del cfg.learn_init_transforms[:]
 
-                # with model.bg: # only for reward learning, which we are skipping
-                #     # Generate random biases for each learn action, so that
-                #     # there is some randomness to the initial action choice
-                #     bias_node = nengo.Node(1)
-                #     bias_ens = nengo.Ensemble(cfg.n_neurons_ens, 1,
-                #                               label='BG Bias Ensemble')
-                #     nengo.Connection(bias_node, bias_ens)
+                with model.bg: # only for reward learning, which we are skipping
+                    # Generate random biases for each learn action, so that
+                    # there is some randomness to the initial action choice
+                    bias_node = nengo.Node(1)
+                    bias_ens = nengo.Ensemble(cfg.n_neurons_ens, 1,
+                                              label='BG Bias Ensemble')
+                    nengo.Connection(bias_node, bias_ens)
 
-                #     for i in range(model.bg.input.size_in): ##?
-                #         init_trfm = (np.random.random() *
-                #                      cfg.learn_init_trfm_max)
-                #         trfm_val = cfg.learn_init_trfm_bias + init_trfm
-                #         model.learn_conns.append(
-                #             nengo.Connection(bias_ens, model.bg.input[i],
-                #                              transform=trfm_val))
-                #         cfg.learn_init_transforms.append(trfm_val)
+                    for i in range(len(vocab.ps_action_learn_sp_strs)): ##?
+                        init_trfm = (np.random.random() *
+                                     cfg.learn_init_trfm_max)
+                        trfm_val = cfg.learn_init_trfm_bias + init_trfm
+                        model.learn_conns.append(
+                            nengo.Connection(bias_ens, model.bg.input[i],
+                                             transform=trfm_val))
+                        cfg.learn_init_transforms.append(trfm_val)
                 logger.write("# learn_init_trfms: %s\n" %
                              (str(cfg.learn_init_transforms)))
         if hasattr(model, 'thal'):
